@@ -1,9 +1,11 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -17,7 +19,7 @@ class _MapScreenState extends State<MapScreen> {
 
   LatLng? _currentPosition; // ← 現在地
   LatLng? _tappedPosition; // ← タップ地点
-  File? _selectedImage; // ← 写真
+  Uint8List? _selectedImageBytes; // ← 写真
 
   final ImagePicker _picker = ImagePicker();
 
@@ -35,7 +37,7 @@ class _MapScreenState extends State<MapScreen> {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       // 位置情報サービスが無効な場合、エラーメッセージを表示
-      print('Location services are disabled.');
+      debugPrint('Location services are disabled.');
       return;
     }
 
@@ -44,14 +46,14 @@ class _MapScreenState extends State<MapScreen> {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         // 権限が拒否された場合、エラーメッセージを表示
-        print('Location permissions are denied');
+        debugPrint('Location permissions are denied');
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       // 永久に拒否された場合、エラーメッセージを表示
-      print('Location permissions are permanently denied.');
+      debugPrint('Location permissions are permanently denied.');
       return;
     }
 
@@ -72,12 +74,12 @@ class _MapScreenState extends State<MapScreen> {
       body: FlutterMap(
         mapController: _mapController,
         options: MapOptions(
-          initialCenter: LatLng(35.681236, 139.767125),
+          initialCenter: const LatLng(35.681236, 139.767125),
           initialZoom: 14.0,
           onTap: (tapPos, latlng) {
             setState(() {
               _tappedPosition = latlng;
-              _selectedImage = null; // 毎回リセット
+              _selectedImageBytes = null; // 毎回リセット
             });
 
             _showPostForm(latlng);
@@ -163,8 +165,9 @@ class _MapScreenState extends State<MapScreen> {
                   await _picker.pickImage(source: ImageSource.gallery);
 
               if (image != null) {
+                final bytes = await image.readAsBytes();
                 setModalState(() {
-                  _selectedImage = File(image.path);
+                  _selectedImageBytes = bytes;
                 });
               }
             }
@@ -182,7 +185,7 @@ class _MapScreenState extends State<MapScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("投稿フォーム",
-                        style: Theme.of(context).textTheme.headline6),
+                        style: Theme.of(context).textTheme.titleLarge),
 
                     const SizedBox(height: 12),
                     Text("緯度: ${pos.latitude}"),
@@ -228,14 +231,14 @@ class _MapScreenState extends State<MapScreen> {
                               Border.all(color: Colors.grey.shade400, width: 2),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: _selectedImage == null
+                        child: _selectedImageBytes == null
                             ? const Center(
                                 child: Text("タップして写真を選択"),
                               )
                             : ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
-                                child: Image.file(
-                                  _selectedImage!,
+                                child: Image.memory(
+                                  _selectedImageBytes!,
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -251,8 +254,8 @@ class _MapScreenState extends State<MapScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         child: const Text("投稿する"),
-                        onPressed: () {
-                          if (_selectedImage == null) {
+                        onPressed: () async {
+                          if (_selectedImageBytes == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text("写真は必須です"),
@@ -263,13 +266,19 @@ class _MapScreenState extends State<MapScreen> {
                           }
 
                           // ここで DB / API などに保存処理を書く
-                          print("投稿データ:");
-                          print("場所: $pos");
-                          print("タイトル: ${titleCtrl.text}");
-                          print("説明: ${descCtrl.text}");
-                          print("写真パス: ${_selectedImage!.path}");
+                          // キャプチャしておく: BottomSheet のコンテキストで Navigator を操作するため
+                          final navigator = Navigator.of(context);
 
-                          Navigator.pop(context);
+                          await uploadPost(
+                            latitude: pos.latitude,
+                            longitude: pos.longitude,
+                            title: titleCtrl.text,
+                            description: descCtrl.text,
+                            imageBytes: _selectedImageBytes!,
+                          );
+
+                          // await 後は context を直接使わない（async gap 対策）
+                          navigator.pop();
                         },
                       ),
                     ),
@@ -283,5 +292,39 @@ class _MapScreenState extends State<MapScreen> {
         );
       },
     );
+  }
+}
+
+Future<void> uploadPost({
+  required double latitude,
+  required double longitude,
+  required String title,
+  required String description,
+  required Uint8List imageBytes,
+  String filename = 'image.jpg',
+}) async {
+  var uri = Uri.parse('http://localhost:3000/api/posts');
+
+  var request = http.MultipartRequest('POST', uri)
+    ..fields['latitude'] = latitude.toString()
+    ..fields['longitude'] = longitude.toString()
+    ..fields['title'] = title
+    ..fields['description'] = description;
+
+  request.files.add(
+    http.MultipartFile.fromBytes(
+      'image',
+      imageBytes,
+      filename: filename,
+      contentType: MediaType('image', 'jpeg'),
+    ),
+  );
+
+  var response = await request.send();
+
+  if (response.statusCode == 200) {
+    debugPrint('Upload successful');
+  } else {
+    debugPrint('Upload failed with status: ${response.statusCode}');
   }
 }
