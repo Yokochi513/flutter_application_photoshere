@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import '../models/post.dart';
+import '../services/post_service.dart';
 import '/services/location_service.dart';
 import '/widgets/post_form_sheet.dart';
 
@@ -16,11 +18,13 @@ class _MapScreenState extends State<MapScreen> {
 
   LatLng? _currentPos;
   LatLng? _tappedPos;
+  List<Post> _posts = [];
 
   @override
   void initState() {
     super.initState();
     _loadLocation();
+    loadPost();
   }
 
   Future<void> _loadLocation() async {
@@ -32,6 +36,11 @@ class _MapScreenState extends State<MapScreen> {
         _mapController.move(_currentPos!, 14.0);
       });
     }
+  }
+
+  Future<void> loadPost() async {
+    _posts = await PostService.fetchPosts();
+    setState(() {});
   }
 
   void _openPostForm(LatLng pos) {
@@ -103,7 +112,47 @@ class _MapScreenState extends State<MapScreen> {
                   size: 40,
                 ),
               )
-            ])
+            ]),
+
+          // 投稿マーカーの表示
+          MarkerLayer(
+            markers: _posts.map((post) {
+              return Marker(
+                width: 50,
+                height: 50,
+                point: LatLng(post.latitude, post.longitude),
+                child: GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: Text(post.title),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.network(post.imageUrl),
+                            const SizedBox(height: 8),
+                            Text(post.description),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('閉じる'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: const Icon(
+                    Icons.location_on,
+                    color: Colors.green,
+                    size: 40,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ],
       ),
     );

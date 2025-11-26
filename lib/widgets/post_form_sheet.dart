@@ -2,7 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
-import '/services/post_repository.dart';
+import '../services/post_service.dart';
 
 class PostFormSheet extends StatefulWidget {
   final LatLng pos;
@@ -115,7 +115,7 @@ class _PostFormSheetState extends State<PostFormSheet> {
                     return;
                   }
 
-                  final success = await PostRepository.uploadPost(
+                  final success = await PostService.uploadPost(
                     latitude: widget.pos.latitude,
                     longitude: widget.pos.longitude,
                     title: titleCtrl.text,
