@@ -18,13 +18,16 @@ class Post {
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
+    final rawUrl = json['imageUrl'].replaceAll(r'\', '/') ?? '';
+    final fullUrl =
+        rawUrl.startsWith('http') ? rawUrl : 'http://localhost:3000/$rawUrl';
     return Post(
-      id: json['id'],
-      latitude: json['latitude'],
-      longitude: json['longitude'],
+      id: json['_id'],
+      latitude: json['lat'],
+      longitude: json['lng'],
       title: json['title'],
       description: json['description'],
-      imageUrl: json['imageUrl'],
+      imageUrl: fullUrl,
       createdAt: DateTime.parse(json['createdAt']),
     );
   }

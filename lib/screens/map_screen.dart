@@ -130,7 +130,13 @@ class _MapScreenState extends State<MapScreen> {
                         content: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Image.network(post.imageUrl),
+                            ConstrainedBox(
+                              constraints: BoxConstraints(maxHeight: 300),
+                              child: Image.network(
+                                post.imageUrl,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                             const SizedBox(height: 8),
                             Text(post.description),
                           ],

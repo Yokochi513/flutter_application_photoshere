@@ -37,6 +37,7 @@ class PostService {
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
+      print(response.body);
       final List<dynamic> data = json.decode(response.body);
       return data.map((json) => Post.fromJson(json)).toList();
     } else {
