@@ -151,9 +151,10 @@ class _MapScreenState extends State<MapScreen> {
                     );
                   },
                   child: const Icon(
-                    Icons.location_on,
-                    color: Colors.green,
+                    Icons.location_pin,
+                    color: Colors.black,
                     size: 40,
+                    shadows: [Shadow(color: Colors.white, blurRadius: 10)],
                   ),
                 ),
               );
