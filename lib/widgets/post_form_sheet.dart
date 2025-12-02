@@ -21,16 +21,23 @@ class _PostFormSheetState extends State<PostFormSheet> {
   final TextEditingController descriptionCtrl = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
-  Uint8List? _image;
+  List<XFile> _images = [];
 
-  Future<void> pickImage() async {
-    final XFile? picked = await _picker.pickImage(
-      source: ImageSource.gallery,
-    );
-    if (picked != null) {
-      _image = await picked.readAsBytes();
-      setState(() {});
+  // 複数画像選択
+  Future<void> pickImages() async {
+    final List<XFile>? picked = await _picker.pickMultiImage();
+    if (picked != null && picked.isNotEmpty) {
+      setState(() {
+        _images.addAll(picked);
+      });
     }
+  }
+
+  // 個別画像削除
+  void removeImage(int index) {
+    setState(() {
+      _images.removeAt(index);
+    });
   }
 
   @override
@@ -69,7 +76,7 @@ class _PostFormSheetState extends State<PostFormSheet> {
             ),
             const SizedBox(height: 20),
             Text(
-              "画像選択",
+              "画像選択(複数可)",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -78,22 +85,73 @@ class _PostFormSheetState extends State<PostFormSheet> {
             ),
             const SizedBox(height: 8),
             GestureDetector(
-              onTap: pickImage,
+              onTap: pickImages,
               child: Container(
+                padding: const EdgeInsets.all(4),
                 height: 200,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade400, width: 2),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: _image == null
-                    ? const Center(
-                        child: Text("タップして画像を選択"),
-                      )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.memory(
-                          _image!,
-                          fit: BoxFit.cover,
+                child: _images.isEmpty
+                    ? const Center(child: Text("タップして画像を選択"))
+                    : SizedBox(
+                        height: 200,
+                        child: GridView.builder(
+                          scrollDirection: Axis.horizontal,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 1, mainAxisSpacing: 4),
+                          itemCount: _images.length,
+                          itemBuilder: (_, index) {
+                            return Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: FutureBuilder<Uint8List>(
+                                    future: _images[index].readAsBytes(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                              ConnectionState.done &&
+                                          snapshot.hasData) {
+                                        return Image.memory(
+                                          snapshot.data!,
+                                          fit: BoxFit.cover,
+                                          width: 150,
+                                        );
+                                      } else {
+                                        return Container(
+                                          color: Colors.grey.shade200,
+                                          width: 150,
+                                          child: const Center(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: GestureDetector(
+                                    onTap: () => removeImage(index),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black54,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.close,
+                                        size: 20,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
               ),
@@ -106,21 +164,22 @@ class _PostFormSheetState extends State<PostFormSheet> {
               child: ElevatedButton(
                 child: const Text("投稿する"),
                 onPressed: () async {
-                  if (_image == null) {
+                  if (_images.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text("画像を選択してください"),
-                          backgroundColor: Colors.red),
+                        content: Text("画像を選択してください"),
+                        backgroundColor: Colors.red,
+                      ),
                     );
                     return;
                   }
 
-                  final success = await PostService.uploadPost(
+                  final success = await PostService.uploadPostMultiple(
                     latitude: widget.pos.latitude,
                     longitude: widget.pos.longitude,
                     title: titleCtrl.text,
                     description: descriptionCtrl.text,
-                    imageBytes: _image!,
+                    images: _images,
                   );
 
                   if (success) {

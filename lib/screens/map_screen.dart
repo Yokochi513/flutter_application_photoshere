@@ -139,7 +139,9 @@ class _MapScreenState extends State<MapScreen> {
                                 ConstrainedBox(
                                   constraints: BoxConstraints(maxHeight: 300),
                                   child: Image.network(
-                                    post.imageUrl,
+                                    post.imageUrls.isNotEmpty
+                                        ? post.imageUrls[0]
+                                        : '',
                                     fit: BoxFit.cover,
                                   ),
                                 ),
