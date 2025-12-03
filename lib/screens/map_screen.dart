@@ -55,8 +55,12 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('撮影場所マップ'),
-      ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: Text('ひかりの跡',
+              style: TextStyle(
+                  color: Colors.orange.shade600, fontWeight: FontWeight.bold)),
+          centerTitle: true),
       body: Stack(
         children: [
           FlutterMap(
