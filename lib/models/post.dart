@@ -26,9 +26,6 @@ class Post {
           : 'http://localhost:3000/$rawUrl';
     }).toList();
 
-    print("Image URLs:");
-    print(urls);
-
     return Post(
       id: json['_id'],
       latitude: json['lat'],
