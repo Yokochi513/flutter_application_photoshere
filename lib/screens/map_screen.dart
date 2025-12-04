@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_application_photoshere/widgets/post_maker.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../models/post.dart';
@@ -67,7 +67,7 @@ class _MapScreenState extends State<MapScreen> {
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
-              initialCenter: LatLng(35.681236, 139.767125),
+              initialCenter: const LatLng(35.681236, 139.767125),
               initialZoom: 14.0,
               interactionOptions: const InteractionOptions(
                 flags: InteractiveFlag.all, // 全ての操作を許可
@@ -150,7 +150,8 @@ class _MapScreenState extends State<MapScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 ConstrainedBox(
-                                  constraints: BoxConstraints(maxHeight: 300),
+                                  constraints:
+                                      const BoxConstraints(maxHeight: 300),
                                   child: Image.network(
                                     post.imageUrls.isNotEmpty
                                         ? post.imageUrls[0]
@@ -171,12 +172,7 @@ class _MapScreenState extends State<MapScreen> {
                           ),
                         );
                       },
-                      child: const Icon(
-                        Icons.location_pin,
-                        color: Colors.black,
-                        size: 40,
-                        shadows: [Shadow(color: Colors.white, blurRadius: 10)],
-                      ),
+                      child: PostMarker(mapController: _mapController),
                     ),
                   );
                 }).toList(),
@@ -195,11 +191,11 @@ class _MapScreenState extends State<MapScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.8),
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black26,
                     blurRadius: 8,
-                  )
+                  ),
                 ],
               ),
               child: Column(
