@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../models/post.dart';
@@ -189,47 +190,78 @@ class _MapScreenState extends State<MapScreen> {
           Positioned(
             bottom: 20,
             right: 20,
-            child: Column(
-              children: [
-                FloatingActionButton(
-                  heroTag: "zoom_in",
-                  mini: true,
-                  onPressed: () {
-                    _mapController.move(
-                      _mapController.camera.center,
-                      _mapController.camera.zoom + 1,
-                    );
-                  },
-                  child: const Icon(Icons.add),
-                ),
-                const SizedBox(height: 10),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 8,
+                  )
+                ],
+              ),
+              child: Column(
+                children: [
+                  FloatingActionButton(
+                    heroTag: "zoom_in",
+                    mini: true,
+                    onPressed: () {
+                      _mapController.move(
+                        _mapController.camera.center,
+                        _mapController.camera.zoom + 1,
+                      );
+                    },
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add, size: 18),
+                        Text("拡大", style: TextStyle(fontSize: 9)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
 
-                // zoom out
-                FloatingActionButton(
-                  heroTag: "zoom_out",
-                  mini: true,
-                  onPressed: () {
-                    _mapController.move(
-                      _mapController.camera.center,
-                      _mapController.camera.zoom - 1,
-                    );
-                  },
-                  child: const Icon(Icons.remove),
-                ),
-                const SizedBox(height: 10),
+                  // zoom out
+                  FloatingActionButton(
+                    heroTag: "zoom_out",
+                    mini: true,
+                    onPressed: () {
+                      _mapController.move(
+                        _mapController.camera.center,
+                        _mapController.camera.zoom - 1,
+                      );
+                    },
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.remove, size: 18),
+                        Text("縮小", style: TextStyle(fontSize: 9)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
 
-                // 現在地へ移動
-                FloatingActionButton(
-                  heroTag: "go_my_location",
-                  mini: true,
-                  onPressed: () {
-                    if (_currentPos != null) {
-                      _mapController.move(_currentPos!, 14.0);
-                    }
-                  },
-                  child: const Icon(Icons.my_location),
-                ),
-              ],
+                  // 現在地へ移動
+                  FloatingActionButton(
+                    heroTag: "go_my_location",
+                    mini: true,
+                    onPressed: () {
+                      if (_currentPos != null) {
+                        _mapController.move(_currentPos!, 14.0);
+                      }
+                    },
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.my_location, size: 18),
+                        Text("現在地", style: TextStyle(fontSize: 9)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
