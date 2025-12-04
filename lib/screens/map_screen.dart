@@ -88,9 +88,9 @@ class _MapScreenState extends State<MapScreen> {
                   CircleMarker(
                     point: _currentPos!,
                     radius: 40,
-                    color: Colors.blue.withOpacity(0.2),
+                    color: Colors.orange.withOpacity(0.25),
                     borderStrokeWidth: 1,
-                    borderColor: Colors.blue.withOpacity(0.5),
+                    borderColor: Colors.orange.withOpacity(0.6),
                   ),
                 ]),
                 MarkerLayer(markers: [
@@ -100,9 +100,17 @@ class _MapScreenState extends State<MapScreen> {
                     point: _currentPos!,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        color: Colors.orange,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
+                        gradient: const RadialGradient(
+                          colors: [Colors.white, Colors.orange],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.withOpacity(0.6),
+                            blurRadius: 12,
+                          ),
+                        ],
                       ),
                     ),
                   )
