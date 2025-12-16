@@ -6,6 +6,7 @@ import '../models/post.dart';
 import '../services/post_service.dart';
 import '/services/location_service.dart';
 import '/widgets/post_form_sheet.dart';
+import '/widgets/post_detail_dialog.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -144,32 +145,7 @@ class _MapScreenState extends State<MapScreen> {
                       onTap: () {
                         showDialog(
                           context: context,
-                          builder: (_) => AlertDialog(
-                            title: Text(post.title),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ConstrainedBox(
-                                  constraints:
-                                      const BoxConstraints(maxHeight: 300),
-                                  child: Image.network(
-                                    post.imageUrls.isNotEmpty
-                                        ? post.imageUrls[0]
-                                        : '',
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(post.description),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('閉じる'),
-                              ),
-                            ],
-                          ),
+                          builder: (_) => PostDetailDialog(post: post),
                         );
                       },
                       child: PostMarker(mapController: _mapController),
