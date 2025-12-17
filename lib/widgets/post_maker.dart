@@ -92,28 +92,6 @@ class _PostMarkerState extends State<PostMarker>
                 ],
               ),
             ),
-
-            // ✨ 下に伸びる光の尾：儚い余韻を演出
-            Transform.translate(
-              offset: Offset(0, 14 * scale),
-              child: Container(
-                width: (4 * scale).clamp(2, double.infinity),
-                height: (22 * scale * pulse).clamp(6, double.infinity),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white.withAlpha((0.9 * 255).round()),
-                      Colors.amber.withAlpha((0.25 * 255).round()),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.6, 1.0],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
           ],
         );
       },
