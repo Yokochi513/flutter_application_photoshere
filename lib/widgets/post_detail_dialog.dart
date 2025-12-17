@@ -31,6 +31,32 @@ class _PostDetailDialogState extends State<PostDetailDialog> {
     _pageController = PageController();
   }
 
+  // 画像をタップしたときに全画面で拡大して表示する
+  void _openFullImage(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          insetPadding: const EdgeInsets.all(12),
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: InteractiveViewer(
+              panEnabled: true,
+              minScale: 1.0,
+              maxScale: 4.0,
+              child: Center(
+                child: Image.network(
+                  widget.post.imageUrls[index],
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -44,15 +70,32 @@ class _PostDetailDialogState extends State<PostDetailDialog> {
     // - imageHeight: ダイアログ高さの約60%を画像領域に割り当て
     // こうすることで小さい画面でもレイアウトが崩れにくくなります。
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final dialogWidth = math.min(screenWidth*0.75, 700.0);
     final dialogHeight = math.min(screenHeight * 0.75, 640.0);
     final imageHeight = dialogHeight * 0.6;
+
+    // フォントを既存の Theme から取得して倍率で拡大する
+    final baseTitleStyle = Theme.of(context).textTheme.titleLarge;
+    final titleStyle = (baseTitleStyle != null)
+        ? baseTitleStyle.copyWith(
+            fontSize: (baseTitleStyle.fontSize ?? 20) * 1.15,
+          )
+        : const TextStyle(fontSize: 22, fontWeight: FontWeight.w600);
+
+    final baseDescriptionStyle = Theme.of(context).textTheme.bodyLarge;
+    final descriptionStyle = (baseDescriptionStyle != null)
+        ? baseDescriptionStyle.copyWith(
+            fontSize: (baseDescriptionStyle.fontSize ?? 14) * 1.25,
+          )
+        : const TextStyle(fontSize: 16);
 
     // Dialog を ConstrainedBox でラップして最大高さを指定します。
     // SizedBox(height: ...) のように厳密に固定するのではなく、
     // maxHeight を指定することで微小なオーバーフローを防ぎます。
     return Dialog(
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: dialogHeight),
+        constraints: BoxConstraints(maxHeight: dialogHeight, maxWidth: dialogWidth),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(
@@ -71,45 +114,40 @@ class _PostDetailDialogState extends State<PostDetailDialog> {
                       // タイトル（最大2行に制限、あふれる場合は「...」で切る）
                       Text(
                         widget.post.title,
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: titleStyle,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 12),
 
                       // レスポンシブな画像＋詳細レイアウト
                       // - LayoutBuilder で利用可能幅を取得して横並び/縦並びを切替
                       // - wide（900px以上）の場合は画像とテキストを横並びにする
                       LayoutBuilder(
                         builder: (context, constraints) {
-                          final isWide = constraints.maxWidth > 900;
-
                           // テキスト詳細部分を定義（説明・座標・日時）
                           Widget details = Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 widget.post.description,
-                                style: Theme.of(context).textTheme.bodyMedium,
+                                // 説明を拡大して可読性を上げる
+                                style: descriptionStyle,
                               ),
                               const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              // 緯度/経度は Wrap にして横幅が狭いときに折り返す
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 4,
                                 children: [
-                                  Flexible(
-                                    child: Text(
-                                      '緯度: ${widget.post.latitude.toStringAsFixed(6)}',
-                                      style: Theme.of(context).textTheme.bodySmall,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                  Text(
+                                    '緯度: ${widget.post.latitude.toStringAsFixed(6)}',
+                                    style: Theme.of(context).textTheme.bodySmall,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Flexible(
-                                    child: Text(
-                                      '経度: ${widget.post.longitude.toStringAsFixed(6)}',
-                                      style: Theme.of(context).textTheme.bodySmall,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                  Text(
+                                    '経度: ${widget.post.longitude.toStringAsFixed(6)}',
+                                    style: Theme.of(context).textTheme.bodySmall,
                                   ),
                                 ],
                               ),
@@ -122,40 +160,20 @@ class _PostDetailDialogState extends State<PostDetailDialog> {
                           );
 
                           // 画像がある場合は imageWidget を組み合わせる
-                          if (widget.post.imageUrls.isNotEmpty) {
-                            final imageWidget = SizedBox(
-                              height: imageHeight,
-                              child: _buildImageGallery(context, imageHeight),
-                            );
+                          final imageWidget = SizedBox(
+                            height: imageHeight,
+                            child: _buildImageGallery(context, imageHeight),
+                          );
 
-                            if (isWide) {
-                              // 横並び: 画像（左）と詳細（右）を比率3:2で表示
-                              return SizedBox(
-                                height: imageHeight,
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(flex: 3, child: imageWidget),
-                                    const SizedBox(width: 16),
-                                    Expanded(flex: 2, child: details),
-                                  ],
-                                ),
-                              );
-                            } else {
-                              // 縦並び: 画像の下に詳細を表示
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  imageWidget,
-                                  const SizedBox(height: 8),
-                                  details,
-                                ],
-                              );
-                            }
-                          } else {
-                            // 画像が無い場合は詳細のみ表示
-                            return details;
-                          }
+                          // 縦並び: 画像の下に詳細を表示
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              imageWidget,
+                              const SizedBox(height: 8),
+                              details,
+                            ],
+                          );
                         },
                       ),
                     ],
@@ -199,23 +217,26 @@ class _PostDetailDialogState extends State<PostDetailDialog> {
                 final imageWidth = math.min(availableWidth * 0.75, availableWidth);
 
                 return Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      widget.post.imageUrls[index],
-                      fit: BoxFit.contain,
-                      width: imageWidth,
-                      height: height,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[300],
-                          width: imageWidth,
-                          height: height,
-                          child: const Center(
-                            child: Icon(Icons.image_not_supported),
-                          ),
-                        );
-                      },
+                  child: GestureDetector(
+                    onTap: () => _openFullImage(context, index),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        widget.post.imageUrls[index],
+                        fit: BoxFit.contain,
+                        width: imageWidth,
+                        height: height,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[300],
+                            width: imageWidth,
+                            height: height,
+                            child: const Center(
+                              child: Icon(Icons.image_not_supported),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 );
