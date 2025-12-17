@@ -1,5 +1,5 @@
-import 'dart:typed_data';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../models/post.dart';
@@ -72,7 +72,7 @@ class PostService {
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
-      print(response.body);
+      debugPrint(response.body);
       final List<dynamic> data = json.decode(response.body);
       return data.map((json) => Post.fromJson(json)).toList();
     } else {

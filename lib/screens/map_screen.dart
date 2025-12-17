@@ -90,9 +90,9 @@ class _MapScreenState extends State<MapScreen> {
                   CircleMarker(
                     point: _currentPos!,
                     radius: 40,
-                    color: Colors.orange.withOpacity(0.25),
+                    color: Colors.orange.withAlpha((0.25 * 255).round()),
                     borderStrokeWidth: 1,
-                    borderColor: Colors.orange.withOpacity(0.6),
+                    borderColor: Colors.orange.withAlpha((0.6 * 255).round()),
                   ),
                 ]),
                 MarkerLayer(markers: [
@@ -109,7 +109,7 @@ class _MapScreenState extends State<MapScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.orange.withOpacity(0.6),
+                            color: Colors.orange.withAlpha((0.6 * 255).round()),
                             blurRadius: 12,
                           ),
                         ],
@@ -162,10 +162,10 @@ class _MapScreenState extends State<MapScreen> {
           Positioned(
             bottom: 20,
             right: 20,
-            child: Container(
+                child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withAlpha((0.8 * 255).round()),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: const [
                   BoxShadow(

@@ -21,12 +21,12 @@ class _PostFormSheetState extends State<PostFormSheet> {
   final TextEditingController descriptionCtrl = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
-  List<XFile> _images = [];
+  final List<XFile> _images = [];
 
   // 複数画像選択
   Future<void> pickImages() async {
-    final List<XFile>? picked = await _picker.pickMultiImage();
-    if (picked != null && picked.isNotEmpty) {
+    final picked = await _picker.pickMultiImage();
+    if (picked.isNotEmpty) {
       setState(() {
         _images.addAll(picked);
       });
@@ -137,7 +137,7 @@ class _PostFormSheetState extends State<PostFormSheet> {
                                   child: GestureDetector(
                                     onTap: () => removeImage(index),
                                     child: Container(
-                                      decoration: BoxDecoration(
+                                      decoration: const BoxDecoration(
                                         color: Colors.black54,
                                         shape: BoxShape.circle,
                                       ),
@@ -182,9 +182,12 @@ class _PostFormSheetState extends State<PostFormSheet> {
                     images: _images,
                   );
 
+                  if (!mounted) return;
                   if (success) {
+                    // ignore: use_build_context_synchronously
                     Navigator.pop(context);
                   } else {
+                    // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("投稿に失敗しました")),
                     );

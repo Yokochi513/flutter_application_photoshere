@@ -52,9 +52,9 @@ class _PostMarkerState extends State<PostMarker>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    Colors.white.withOpacity(0.95),
-                    Colors.yellowAccent.withOpacity(0.55),
-                    Colors.amber.withOpacity(0.24),
+                    Colors.white.withAlpha((0.95 * 255).round()),
+                    Colors.yellowAccent.withAlpha((0.55 * 255).round()),
+                    Colors.amber.withAlpha((0.24 * 255).round()),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 0.32, 0.68, 1.0],
@@ -68,7 +68,7 @@ class _PostMarkerState extends State<PostMarker>
               height: (48 * scale * pulse).clamp(14, double.infinity),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.amber.withOpacity(0.10 * pulse),
+                color: Colors.amber.withAlpha((0.10 * pulse * 255).round()),
               ),
             ),
 
@@ -85,7 +85,7 @@ class _PostMarkerState extends State<PostMarker>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.yellow.withOpacity(0.7 * pulse),
+                    color: Colors.yellow.withAlpha((0.7 * pulse * 255).round()),
                     blurRadius: 12,
                     spreadRadius: 4,
                   ),
@@ -104,8 +104,8 @@ class _PostMarkerState extends State<PostMarker>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.white.withOpacity(0.9),
-                      Colors.amber.withOpacity(0.25),
+                      Colors.white.withAlpha((0.9 * 255).round()),
+                      Colors.amber.withAlpha((0.25 * 255).round()),
                       Colors.transparent,
                     ],
                     stops: const [0.0, 0.6, 1.0],
