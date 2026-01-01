@@ -42,6 +42,7 @@ class PostService {
     required String title,
     required String description,
     required List<XFile> images,
+    required List<String> tags,
   }) async {
     final uri = Uri.parse('http://localhost:3000/api/posts');
 
@@ -51,6 +52,10 @@ class PostService {
       ..fields['title'] = title
       ..fields['description'] = description;
 
+    // タグを追加
+    request.fields['tags'] = jsonEncode(tags);
+
+    // 画像を追加
     for (int i = 0; i < images.length; i++) {
       final bytes = await images[i].readAsBytes();
       request.files.add(
@@ -63,6 +68,10 @@ class PostService {
       );
     }
 
+    // デバッグ用にリクエスト内容を出力
+    debugPrint('Request Fields: ${request.fields}');
+    debugPrint(
+        'Request Files: ${request.files.map((file) => file.filename).toList()}');
     var response = await request.send();
     return response.statusCode == 201;
   }

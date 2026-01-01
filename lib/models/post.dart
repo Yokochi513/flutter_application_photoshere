@@ -5,6 +5,7 @@ class Post {
   final String title;
   final String description;
   final List<String> imageUrls;
+  final List<String> tags;
   final DateTime createdAt;
 
   Post({
@@ -14,6 +15,7 @@ class Post {
     required this.title,
     required this.description,
     required this.imageUrls,
+    required this.tags,
     required this.createdAt,
   });
 
@@ -33,6 +35,7 @@ class Post {
       title: json['title'],
       description: json['description'],
       imageUrls: urls,
+      tags: List<String>.from(json['tagNames'] ?? []),
       createdAt: DateTime.parse(json['createdAt']),
     );
   }

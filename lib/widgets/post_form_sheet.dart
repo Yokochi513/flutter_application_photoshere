@@ -21,6 +21,9 @@ class _PostFormSheetState extends State<PostFormSheet> {
   final TextEditingController descriptionCtrl = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
+  final TextEditingController tagCtrl = TextEditingController();
+  final List<String> _tags = [];
+
   final List<XFile> _images = [];
 
   // 複数画像選択
@@ -40,6 +43,18 @@ class _PostFormSheetState extends State<PostFormSheet> {
     });
   }
 
+  // タグ追加
+  void addTag(String value) {
+    final tag = value.trim();
+    if (tag.isEmpty) return;
+    if (_tags.contains(tag)) return;
+
+    setState(() {
+      _tags.add(tag);
+    });
+    tagCtrl.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -55,8 +70,13 @@ class _PostFormSheetState extends State<PostFormSheet> {
           children: [
             Text("投稿フォーム", style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
-            Text("緯度: ${widget.pos.latitude}"),
-            Text("経度: ${widget.pos.longitude}"),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("緯度: ${widget.pos.latitude}"),
+                Text("経度: ${widget.pos.longitude}"),
+              ],
+            ),
             const SizedBox(height: 20),
             TextField(
               controller: titleCtrl,
@@ -73,6 +93,34 @@ class _PostFormSheetState extends State<PostFormSheet> {
                 labelText: "説明",
                 border: OutlineInputBorder(),
               ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: tagCtrl,
+              decoration: const InputDecoration(
+                labelText: "タグ",
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: addTag,
+            ),
+
+            const SizedBox(height: 8),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: _tags
+                  .map(
+                    (tag) => Chip(
+                      label: Text('#$tag'),
+                      onDeleted: () {
+                        setState(() {
+                          _tags.remove(tag);
+                        });
+                      },
+                    ),
+                  )
+                  .toList(),
             ),
             const SizedBox(height: 20),
             Text(
@@ -180,6 +228,7 @@ class _PostFormSheetState extends State<PostFormSheet> {
                     title: titleCtrl.text,
                     description: descriptionCtrl.text,
                     images: _images,
+                    tags: _tags,
                   );
 
                   if (!mounted) return;

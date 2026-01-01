@@ -71,7 +71,7 @@ class _PostDetailDialogState extends State<PostDetailDialog> {
     // こうすることで小さい画面でもレイアウトが崩れにくくなります。
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    final dialogWidth = math.min(screenWidth*0.75, 700.0);
+    final dialogWidth = math.min(screenWidth * 0.75, 700.0);
     final dialogHeight = math.min(screenHeight * 0.75, 640.0);
     final imageHeight = dialogHeight * 0.6;
 
@@ -95,7 +95,8 @@ class _PostDetailDialogState extends State<PostDetailDialog> {
     // maxHeight を指定することで微小なオーバーフローを防ぎます。
     return Dialog(
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: dialogHeight, maxWidth: dialogWidth),
+        constraints:
+            BoxConstraints(maxHeight: dialogHeight, maxWidth: dialogWidth),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(
@@ -135,6 +136,28 @@ class _PostDetailDialogState extends State<PostDetailDialog> {
                                 // 説明を拡大して可読性を上げる
                                 style: descriptionStyle,
                               ),
+                              // タグの表示
+                              if (widget.post.tags.isNotEmpty)
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 4,
+                                  children: widget.post.tags.map((tag) {
+                                    return Chip(
+                                      label: Text(
+                                        '#$tag',
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 0,
+                                        vertical: 0,
+                                      ),
+                                      visualDensity: VisualDensity.compact,
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      shape: const StadiumBorder(),
+                                    );
+                                  }).toList(),
+                                ),
                               const SizedBox(height: 8),
                               // 緯度/経度は Wrap にして横幅が狭いときに折り返す
                               Wrap(
@@ -143,11 +166,13 @@ class _PostDetailDialogState extends State<PostDetailDialog> {
                                 children: [
                                   Text(
                                     '緯度: ${widget.post.latitude.toStringAsFixed(6)}',
-                                    style: Theme.of(context).textTheme.bodySmall,
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
                                   ),
                                   Text(
                                     '経度: ${widget.post.longitude.toStringAsFixed(6)}',
-                                    style: Theme.of(context).textTheme.bodySmall,
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
                                   ),
                                 ],
                               ),
@@ -214,7 +239,8 @@ class _PostDetailDialogState extends State<PostDetailDialog> {
               builder: (context, constraints) {
                 final availableWidth = constraints.maxWidth;
                 // Use ~75% of available width for the image to make it more prominent
-                final imageWidth = math.min(availableWidth * 0.75, availableWidth);
+                final imageWidth =
+                    math.min(availableWidth * 0.75, availableWidth);
 
                 return Center(
                   child: GestureDetector(
@@ -313,7 +339,8 @@ class _PostDetailDialogState extends State<PostDetailDialog> {
             right: 0,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(12),
