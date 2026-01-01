@@ -46,12 +46,18 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {});
   }
 
-  void _openPostForm(LatLng pos) {
-    showModalBottomSheet(
+  void _openPostForm(LatLng pos) async {
+    final result = await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (_) => PostFormSheet(pos: pos), // 投稿フォームを表示
     );
+
+    if (result == true) {
+      // 投稿成功時に地図の再描画と投稿データの再取得を行う
+      await loadPost();
+      setState(() {});
+    }
   }
 
   @override

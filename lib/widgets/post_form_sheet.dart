@@ -184,10 +184,9 @@ class _PostFormSheetState extends State<PostFormSheet> {
 
                   if (!mounted) return;
                   if (success) {
-                    // ignore: use_build_context_synchronously
-                    Navigator.pop(context);
+                    // 投稿成功時にリダイレクトと再描画をトリガー
+                    Navigator.pop(context, true); // true を返してリダイレクトを示す
                   } else {
-                    // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("投稿に失敗しました")),
                     );
