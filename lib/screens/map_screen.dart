@@ -7,6 +7,7 @@ import '../services/post_service.dart';
 import '/services/location_service.dart';
 import '/widgets/post_form_sheet.dart';
 import '/widgets/post_detail_dialog.dart';
+import '../widgets/map_control_buttons.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -18,30 +19,30 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final MapController _mapController = MapController();
 
-  LatLng? _currentPos;
-  LatLng? _tappedPos;
-  List<Post> _posts = [];
+  LatLng? _currentPos; // 現在地の座標を保持する変数
+  LatLng? _tappedPos; // ユーザーがタップした位置の座標を保持する変数
+  List<Post> _posts = []; // 投稿データのリスト
 
   @override
   void initState() {
     super.initState();
-    _loadLocation();
-    loadPost();
+    _loadLocation(); // 現在地を取得する非同期処理を呼び出し
+    loadPost(); // 投稿データを取得する非同期処理を呼び出し
   }
 
   Future<void> _loadLocation() async {
-    final position = await LocationService.getCurrentLocation();
+    final position = await LocationService.getCurrentLocation(); // 現在地を取得
     if (position != null) {
       setState(() {
-        _currentPos = LatLng(position.latitude, position.longitude);
+        _currentPos = LatLng(position.latitude, position.longitude); // 現在地を設定
         setState(() {});
-        _mapController.move(_currentPos!, 14.0);
+        _mapController.move(_currentPos!, 14.0); // マップを現在地に移動
       });
     }
   }
 
   Future<void> loadPost() async {
-    _posts = await PostService.fetchPosts();
+    _posts = await PostService.fetchPosts(); // 投稿データを取得
     setState(() {});
   }
 
@@ -49,7 +50,7 @@ class _MapScreenState extends State<MapScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (_) => PostFormSheet(pos: pos),
+      builder: (_) => PostFormSheet(pos: pos), // 投稿フォームを表示
     );
   }
 
@@ -68,20 +69,20 @@ class _MapScreenState extends State<MapScreen> {
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
-              initialCenter: const LatLng(35.681236, 139.767125),
-              initialZoom: 14.0,
+              initialCenter: const LatLng(35.681236, 139.767125), // 初期位置を設定
+              initialZoom: 14.0, // 初期ズームレベルを設定
               interactionOptions: const InteractionOptions(
                 flags: InteractiveFlag.all, // 全ての操作を許可
               ),
               onTap: (_, latlng) {
-                setState(() => _tappedPos = latlng);
-                _openPostForm(latlng);
+                setState(() => _tappedPos = latlng); // タップ位置を更新
+                _openPostForm(latlng); // 投稿フォームを開く
               },
             ),
             children: [
               TileLayer(
                 urlTemplate:
-                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", // タイルのURLテンプレート
                 subdomains: const ['a', 'b', 'c'],
               ),
               // 現在地の表示
@@ -162,78 +163,24 @@ class _MapScreenState extends State<MapScreen> {
           Positioned(
             bottom: 20,
             right: 20,
-                child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha((0.8 * 255).round()),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  FloatingActionButton(
-                    heroTag: "zoom_in",
-                    mini: true,
-                    onPressed: () {
-                      _mapController.move(
-                        _mapController.camera.center,
-                        _mapController.camera.zoom + 1,
-                      );
-                    },
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add, size: 18),
-                        Text("拡大", style: TextStyle(fontSize: 9)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // zoom out
-                  FloatingActionButton(
-                    heroTag: "zoom_out",
-                    mini: true,
-                    onPressed: () {
-                      _mapController.move(
-                        _mapController.camera.center,
-                        _mapController.camera.zoom - 1,
-                      );
-                    },
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.remove, size: 18),
-                        Text("縮小", style: TextStyle(fontSize: 9)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // 現在地へ移動
-                  FloatingActionButton(
-                    heroTag: "go_my_location",
-                    mini: true,
-                    onPressed: () {
-                      if (_currentPos != null) {
-                        _mapController.move(_currentPos!, 14.0);
-                      }
-                    },
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.my_location, size: 18),
-                        Text("現在地", style: TextStyle(fontSize: 9)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            child: MapControlButtons(
+              onZoomIn: () {
+                _mapController.move(
+                  _mapController.camera.center,
+                  _mapController.camera.zoom + 1, // ズームイン
+                );
+              },
+              onZoomOut: () {
+                _mapController.move(
+                  _mapController.camera.center,
+                  _mapController.camera.zoom - 1, // ズームアウト
+                );
+              },
+              onGoToMyLocation: () {
+                if (_currentPos != null) {
+                  _mapController.move(_currentPos!, 14.0); // 現在地に移動
+                }
+              },
             ),
           ),
         ],
