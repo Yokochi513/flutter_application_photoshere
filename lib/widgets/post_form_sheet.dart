@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import '../services/post_service.dart';
@@ -43,15 +44,24 @@ class _PostFormSheetState extends State<PostFormSheet> {
     });
   }
 
-  // タグ追加
+  // タグ追加（複数タグ対応）
   void addTag(String value) {
-    final tag = value.trim();
-    if (tag.isEmpty) return;
-    if (_tags.contains(tag)) return;
-
-    setState(() {
-      _tags.add(tag);
-    });
+    // # で分割
+    final parts = value.split('#');
+    
+    for (var part in parts) {
+      var tag = part.trim();
+      // アルファベット（と数字）以外の記号を削除
+      tag = tag.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+      
+      if (tag.isEmpty) continue;
+      if (_tags.contains(tag)) continue;
+      
+      setState(() {
+        _tags.add(tag);
+      });
+    }
+    
     tagCtrl.clear();
   }
 
@@ -95,13 +105,21 @@ class _PostFormSheetState extends State<PostFormSheet> {
               ),
             ),
             const SizedBox(height: 8),
-            TextField(
-              controller: tagCtrl,
-              decoration: const InputDecoration(
-                labelText: "タグ",
-                border: OutlineInputBorder(),
+            RawKeyboardListener(
+              focusNode: FocusNode(),
+              onKey: (event) {
+                if (event.isKeyPressed(LogicalKeyboardKey.tab)) {
+                  addTag(tagCtrl.text);
+                }
+              },
+              child: TextField(
+                controller: tagCtrl,
+                decoration: const InputDecoration(
+                  labelText: "タグ",
+                  border: OutlineInputBorder(),
+                ),
+                onSubmitted: addTag,
               ),
-              onSubmitted: addTag,
             ),
 
             const SizedBox(height: 8),
