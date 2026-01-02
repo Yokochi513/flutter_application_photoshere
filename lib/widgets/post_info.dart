@@ -27,19 +27,18 @@ class PostInfo extends StatelessWidget {
         const SizedBox(height: 8),
         TagList(tags: post.tags),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 4,
+        Row(
           children: [
             Text('緯度: ${post.latitude.toStringAsFixed(6)}',
                 style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(width: 8),
             Text('経度: ${post.longitude.toStringAsFixed(6)}',
+                style: Theme.of(context).textTheme.bodySmall),
+            const Spacer(),
+            Text('投稿日時: ${post.createdAt.toString().split('.')[0]}',
                 style: Theme.of(context).textTheme.bodySmall),
           ],
         ),
-        const SizedBox(height: 8),
-        Text('投稿日時: ${post.createdAt.toString().split('.')[0]}',
-            style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }

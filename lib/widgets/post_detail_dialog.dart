@@ -85,7 +85,6 @@ class _PostDetailDialogState extends State<PostDetailDialog> {
                       // - wide（900px以上）の場合は画像とテキストを横並びにする
                       LayoutBuilder(
                         builder: (context, constraints) {
-                          // テキスト詳細部分は共通ウィジェットに切り出しました
                           final details = PostInfo(
                             post: widget.post,
                             descriptionStyle: descriptionStyle,
